@@ -10,12 +10,12 @@ git clone https://github.com/yourusername/pka_calculator.git
 cd pka_calculator
 ```
 
-3. Install in development mode:
+2. Install in development mode:
 ```bash
 pip install -e .
 ```
 
-5. Checking the installation
+3. Checking the installation
 ```bash
 pka-calculator --help
 ```
@@ -30,29 +30,34 @@ pka-calculator --help
 - matplotlib
 - scipy
 
-## Basic Usage
+## Usage example
 
-1. Run calculations:
+0. Go to folder
 ```bash
-pka-calculator calculate molecules/ -b "6-31+G*" -m PBE -o calculations
+cd example
 ```
 
-3. Monitor jobs:
+2. Run calculations:
 ```bash
-pka-calculator monitor calculations_summary.txt -u yourusername
+pka-calculator calculate molecules/ -b "6-31+G*" -m PBE -o mycalculations
 ```
 
-5. Process results:
+2. Monitor jobs:
 ```bash
-pka-calculator process calculations/ -o results
+pka-calculator monitor mycalculations -u yourusername
 ```
 
-7. Analyze with experimental data:
+3. Process results:
+```bash
+pka-calculator process mycalculations/ -o results
+```
+
+4. Analyze with experimental data:
 ```bash
 pka-calculator analyze results/ -e experimental_pka.csv -o analysis
 ```
 
-9. Visualize results:
+5. Visualize results:
 ```bash
 pka-calculator visualize analysis/ -o plots
 ```
@@ -60,13 +65,17 @@ pka-calculator visualize analysis/ -o plots
 ## File Structure
 ```txt
 pka_calculator/
-├── pka_calculator/       # Core code
-│   ├── calculator.py     # Run calculations
-│   ├── processor.py      # Process results
-│   ├── analyzer.py       # Data analysis  
-│   ├── visualizer.py     # Visualization
-│   ├── monitor.py        # Job monitoring
-│   └── __init__.py
-├── pyproject.toml        # Setup file
-└── README.md             # Documentation
+├── pka_calculator/          # Core code
+│   ├── calculator.py        # Run calculations
+│   ├── processor.py         # Process results
+│   ├── analyzer.py          # Data analysis  
+│   ├── visualizer.py        # Visualization
+│   ├── monitor.py           # Job monitoring
+│   └── __init__.py      
+├── example/                 # Example
+│   ├── molecules/           # .xyz files
+|   ├── solutions/           # Solutions
+│   └── experimental_pka.csv # Experimental data
+├── pyproject.toml           # Setup file
+└── README.md                # Documentation
 ```
