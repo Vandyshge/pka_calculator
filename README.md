@@ -1,21 +1,24 @@
-pKa Calculator
+## pKa Calculator
 ==============
 
 Python library for calculating pKa values using quantum chemical methods
 
-Installation
+# Installation
 ------------
 1. Clone repository:
+'''bash
 git clone https://github.com/yourusername/pka_calculator.git
 cd pka_calculator
 
-2. Install in development mode:
+3. Install in development mode:
+'''bash
 pip install -e .
 
-3. Checking the installation
+5. Checking the installation
+'''bash
 pka-calculator --help
 
-Dependencies
+# Dependencies
 ------------
 - Python 3.8+
 - ORCA (must be installed and in PATH)
@@ -25,24 +28,29 @@ Dependencies
 - matplotlib
 - scipy
 
-Basic Usage
+# Basic Usage
 -----------
 1. Run calculations:
+'''bash
 pka-calculator calculate molecules/ -b "6-31+G*" -m PBE -o calculations
 
-2. Monitor jobs:
+3. Monitor jobs:
+'''bash
 pka-calculator monitor calculations_summary.txt -u yourusername
 
-3. Process results:
+4. Process results:
+'''bash
 pka-calculator process calculations/ -o results
 
-4. Analyze with experimental data:
+5. Analyze with experimental data:
+'''bash
 pka-calculator analyze results/ -e experimental_pka.csv -o analysis
 
-5. Visualize results:
+6. Visualize results:
+'''bash
 pka-calculator visualize analysis/ -o plots
 
-File Structure
+# File Structure
 --------------
 pka_calculator/
 ├── pka_calculator/       # Core code
