@@ -1,4 +1,4 @@
-# pKa Calculator
+# pK_a Calculator
 
 Python library for calculating pKa values using quantum chemical methods
 
