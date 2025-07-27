@@ -65,17 +65,19 @@ pka-calculator visualize analysis/ -o plots
 ## File Structure
 ```txt
 pka_calculator/
-├── pka_calculator/          # Core code
-│   ├── calculator.py        # Run calculations
-│   ├── processor.py         # Process results
-│   ├── analyzer.py          # Data analysis  
-│   ├── visualizer.py        # Visualization
-│   ├── monitor.py           # Job monitoring
+├── pka_calculator/                   # Core code
+│   ├── calculator.py                 # Run calculations
+│   ├── monitor.py                    # Job monitoring
+│   ├── processor.py                  # Process results
+│   ├── analyzer.py                   # Data analysis  
+│   ├── visualizer.py                 # Visualization
 │   └── __init__.py      
-├── example/                 # Example
-│   ├── molecules/           # .xyz files
-|   ├── solutions/           # Solutions
-│   └── experimental_pka.csv # Experimental data
-├── pyproject.toml           # Setup file
-└── README.md                # Documentation
+├── example/                          # Example
+│   ├── molecules/                    # .xyz files
+│   │   ├── molecule.xyz              # Molecule
+|   |   └── molecule_deprotonated.xyz # Deprotonated molecule
+|   ├── solutions/                    # Solutions
+│   └── experimental_pka.csv          # Experimental data
+├── pyproject.toml                    # Setup file
+└── README.md                         # Documentation
 ```
