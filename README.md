@@ -6,7 +6,7 @@ Python library for calculating pKa values using quantum chemical methods
 
 1. Clone repository:
 ```bash
-git clone git@github.com:Vandyshge/pka_calculator.git
+git clone https://github.com/Vandyshge/pka_calculator.git
 cd pka_calculator
 ```
 
