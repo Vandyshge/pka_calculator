@@ -37,7 +37,7 @@ pka-calculator --help
 cd example
 ```
 
-2. Run calculations:
+1. Run calculations:
 ```bash
 pka-calculator calculate molecules/ -b "6-31+G*" -m PBE -o mycalculations
 ```
