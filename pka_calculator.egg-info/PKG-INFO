@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: pka_calculator
+Version: 0.1
+Summary: Tool for pKa calculations
+Author-email: Your Name <your.email@example.com>
+Requires-Python: >=3.8
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: matplotlib
+Requires-Dist: scipy

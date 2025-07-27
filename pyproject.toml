@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pka_calculator"
+version = "0.1"
+authors = [
+    {name="Vandyshev Georgii", email="vandyshev.gk@phystech.edu"},
+]
+description = "Tool for pKa calculations"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "scipy",
+]
+
+[project.scripts]
+pka-calculator = "pka_calculator.cli:main"
