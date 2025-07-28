@@ -57,6 +57,17 @@ def main():
     vis_parser.add_argument('-n', '--name_file', default='basis',
                            help='Name of output file (basis)')
 
+    # Full pipeline command
+    pipeline_parser = subparsers.add_parser('pipeline', help='Run full processing pipeline')
+    pipeline_parser.add_argument('calc_dir', 
+                               help='Directory with calculations')
+    pipeline_parser.add_argument('-e', '--experimental', required=True,
+                               help='CSV file with experimental pKa values')
+    pipeline_parser.add_argument('-o', '--output', default='process',
+                               help='Output directory')
+    pipeline_parser.add_argument('-n', '--name_file', default='basis',
+                               help='Base name for output files')
+
     args = parser.parse_args()
 
     if args.command == 'calculate':
@@ -69,6 +80,17 @@ def main():
         analyze_results(args.results_dir, args.experimental, args.output, args.name_file)
     elif args.command == 'visualize':
         visualize_results(args.analysis_dir, args.output, args.name_file)
+    elif args.command == 'pipeline':
+        print("\n=== Processing calculation results ===")
+        process_results(args.calc_dir, args.output, args.name_file)
+        
+        print("\n=== Analyzing results ===")
+        analyze_results(args.output, args.experimental, args.output, args.name_file)
+        
+        print("\n=== Generating visualizations ===")
+        visualize_results(args.output, args.output, args.name_file)
+        
+        print("\nPipeline completed successfully!")
 
 if __name__ == '__main__':
     main()

@@ -30,15 +30,12 @@ def analyze_results(results_dir, experimental_file, output_dir, name_file):
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
     
-    # Load data
     results_df = pd.read_csv(Path(results_dir) / f"results_{name_file}.csv", sep=';')
     pka_df = pd.read_csv(experimental_file, sep=';')
     pka_df = pka_df[['Acids', 'pKa (exp)']].dropna()
     
-    # Merge data
     merged_df = pd.merge(results_df, pka_df, left_on='Molecule', right_on='Acids')
     
-    # Calculate G(H+) for each method
     methods = [col.split('_')[0] for col in results_df.columns if '_G_N' in col]
     gh_results = {}
     
@@ -58,12 +55,10 @@ def analyze_results(results_dir, experimental_file, output_dir, name_file):
             'min': np.min(g_h)
         }
         
-        # Calculate pKa values
         g_ha = method_df['G_N'] * 2625.5
         g_a = method_df['G_D'] * 2625.5
         merged_df[f'pKa_{method}'] = calculate_pka(g_ha, g_a, gh_mean)
     
-    # Save G(H+) results
     gh_file = output_dir / f"gh_{name_file}.csv"
     with open(gh_file, 'w', newline='') as f:
         writer = csv.writer(f, delimiter=';')
@@ -75,7 +70,6 @@ def analyze_results(results_dir, experimental_file, output_dir, name_file):
                 values['max'], values['min']
             ])
     
-    # Save pKa results
     pka_file = output_dir / f"pka_{name_file}.csv"
     merged_df.to_csv(pka_file, index=False, sep=';')
     

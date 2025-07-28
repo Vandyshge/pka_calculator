@@ -1,0 +1,8 @@
+/.git/
+/pka_calculator.egg-info/
+/build/
+/dist/
+/__pycache__/
+*.egg-info/
+*.egg
+.ipynb_checkpoints/

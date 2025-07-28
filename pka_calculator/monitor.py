@@ -4,19 +4,14 @@ import re
 from pathlib import Path
 
 def get_squeue_output():
-    """Получаем вывод команды squeue"""
     try:
         result = subprocess.run(['squeue'], capture_output=True, text=True, check=True)
         return result.stdout
-    except subprocess.CalledProcessError as e:
-        print(f"Ошибка при выполнении squeue: {e}")
-        return ""
-    except FileNotFoundError:
-        print("Команда squeue не найдена. Убедитесь, что Slurm установлен.")
+    except:
+        print("Error when executing squeue")
         return ""
 
 def parse_squeue(output, user):
-    """Парсим вывод squeue и возвращаем только запущенные (R) задачи пользователя"""
     jobs = []
     for line in output.split('\n'):
         if not line.strip() or line.startswith("JOBID"):
@@ -37,7 +32,6 @@ def parse_squeue(output, user):
     return jobs
 
 def load_calculations_summary(summary_path):
-    """Загружаем файл с описанием расчетов"""
     try:
         return pd.read_csv(f'{summary_path}/calculations_summary.csv', sep=';', engine='python', 
                          skipinitialspace=True, 
@@ -47,7 +41,6 @@ def load_calculations_summary(summary_path):
         return pd.DataFrame()
 
 def analyze_jobs(squeue_jobs, summary_df):
-    """Анализируем какие задачи выполняются"""
     running_jobs = []
     for job in squeue_jobs:
         task = summary_df[summary_df['Job ID'].astype(str) == job['JOBID']]
@@ -64,22 +57,18 @@ def analyze_jobs(squeue_jobs, summary_df):
     return running_jobs
 
 def monitor_jobs(summary_path, user):
-    """Основная функция мониторинга"""
+    """Output of a list of currently running tasks"""
     squeue_output = get_squeue_output()
     squeue_jobs = parse_squeue(squeue_output, user)
     summary_df = load_calculations_summary(summary_path)
     
-    if summary_df.empty:
-        print("Не удалось загрузить файл с описанием расчетов")
-        return []
-    
     running_jobs = analyze_jobs(squeue_jobs, summary_df)
 
     if not running_jobs:
-        print("Нет выполняющихся задач")
+        print("There are no running tasks")
         return
     
-    print("\nТекущие выполняющиеся задачи:")
+    print("\nCurrent running tasks:")
     print("-" * 84)
     print(f"{'Job ID':<10}{'Molecule':<20}{'Method':<10}{'Form':<15}{'Status':<10}{'Node':<10}{'Time':<10}")
     print("-" * 84)

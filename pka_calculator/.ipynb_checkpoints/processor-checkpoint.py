@@ -43,7 +43,6 @@ def generate_results_table(results, output_dir, name_file):
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
     
-    # Generate CSV
     molecules = sorted({key[0] for key in results.keys()})
     methods = sorted({key[1] for key in results.keys()})
     

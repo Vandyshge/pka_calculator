@@ -6,7 +6,16 @@ METHOD_TEMPLATES = {
     'HF': "! HF {basis} TightSCF CPCM(water) OPT Freq",
     'B3LYP': "! B3LYP {basis} TightSCF CPCM(water) OPT Freq",
     'PBE0': "! PBE0 {basis} TightSCF CPCM(water) OPT Freq",
-    'PBE': "! PBE {basis} TightSCF CPCM(water) OPT Freq"
+    'PBE': "! PBE {basis} TightSCF CPCM(water) OPT Freq",
+    'M062X': "! M062X {basis} TightSCF CPCM(water) OPT Freq",
+    'DLPNO-CCSD(T)': "! DLPNO-CCSD(T) {basis} TightSCF CPCM(water) Freq", # no optimizing 
+    'MP2': "! MP2 {basis} TightSCF CPCM(water) OPT Freq",
+    'LSDA': "! LDA {basis} TightSCF CPCM(water) OPT Freq",
+    'CCSD(T)': "! CCSD(T) {basis} TightSCF CPCM(water) OPT Freq",
+    'AM1': "! AM1 {basis} TightSCF CPCM(water) OPT Freq",
+    'WB97X-D3': "! WB97X-D3 {basis} TightSCF CPCM(water) OPT Freq",
+    'CAM-B3LYP': "! CAM-B3LYP {basis} TightSCF CPCM(water) OPT Freq",
+    'PM3': "! PM3 {basis} TightSCF CPCM(water) OPT Freq"
 }
 
 ELECTRON_COUNT = {
@@ -60,7 +69,6 @@ def generate_calculations(xyz_dir, basis, methods, output_dir):
                 charge = 0 if form == "neutral" else -1
                 multiplicity = calculate_multiplicity(src_xyz, charge=charge)
                 
-                # Write input file
                 input_file = method_dir / "input.inp"
                 with open(input_file, 'w', encoding='utf-8') as f:
                     f.write(METHOD_TEMPLATES[method].format(basis=basis) + "\n")
@@ -69,10 +77,8 @@ def generate_calculations(xyz_dir, basis, methods, output_dir):
 end''')
                     f.write(f"* xyzfile {charge} {multiplicity} molecule.xyz\n")
              
-                # Copy XYZ file
                 os.system(f"cp {src_xyz} {method_dir}/molecule.xyz")
                 
-                # Submit job with sbatch
                 os.chdir(method_dir)
                 try:
                     sbatch_cmd = [
