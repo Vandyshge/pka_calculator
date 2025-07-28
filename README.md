@@ -32,7 +32,7 @@ pka-calculator --help
 
 ## Usage example
 
-0. Go to folder
+0. Go to folder:
 ```bash
 cd example
 ```
@@ -62,6 +62,11 @@ pka-calculator analyze results/ -e experimental_pka.csv -o analysis
 pka-calculator visualize analysis/ -o plots
 ```
 
+or 6. Run the results through the processing pipeline:
+```bash
+pka-calculator pipeline mycalculations/ -e molecules/experimental_pka.csv -o data
+```
+
 ## File Structure
 ```txt
 pka_calculator/
@@ -79,5 +84,6 @@ pka_calculator/
 |   ├── solutions/                    # Solutions
 │   └── experimental_pka.csv          # Experimental data
 ├── pyproject.toml                    # Setup file
+├── .gitignore                        # Gitignore
 └── README.md                         # Documentation
 ```
