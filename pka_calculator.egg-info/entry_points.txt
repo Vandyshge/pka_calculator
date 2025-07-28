@@ -1,2 +1,0 @@
-[console_scripts]
-pka-calculator = pka_calculator.cli:main
