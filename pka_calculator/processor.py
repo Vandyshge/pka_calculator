@@ -39,6 +39,42 @@ def collect_results(calc_dir):
     
     return results
 
+def generate_latex_table(results, name_file):
+    """Генерирует LaTeX таблицу с энергиями Гиббса и временем расчета"""
+    latex = f"""\\begin{{tabular}}{{lcccccc}}
+\\toprule
+ & \\multicolumn{{2}}{{c}}{{HF}} & \\multicolumn{{2}}{{c}}{{B3LYP}} & \\multicolumn{{2}}{{c}}{{PBE0}} \\\\
+\\cmidrule(lr){{2-3}} \\cmidrule(lr){{4-5}} \\cmidrule(lr){{6-7}}
+\\multirow{{2}}{{*}}{{Molecule}} & G$_N$ & G$_D$ & G$_N$ & G$_D$ & G$_N$ & G$_D$ \\\\
+ & t$_N$ & t$_D$ & t$_N$ & t$_D$ & t$_N$ & t$_D$ \\\\
+\\midrule
+"""
+
+    molecules = sorted({key[0] for key in results.keys()})
+    methods = sorted({key[1] for key in results.keys()})
+    
+    for mol in molecules:
+        energy_row = f"\\multirow{{2}}{{*}}{{{mol}}}"
+        time_row = " "
+        
+        for method in methods:
+            for form in ["neutral", "deprotonated"]:
+                key = (mol, method, form)
+                if key in results:
+                    gibbs, time = results[key]
+                    energy_row += f" & {gibbs:.6f}" if gibbs is not None else " & --"
+                    time_row += f" & {time}" if time is not None else " & --"
+                else:
+                    energy_row += " & --"
+                    time_row += " & --"
+        
+        latex += energy_row + " \\\\\n" + time_row + " \\\\\n"
+
+    latex += """\\bottomrule
+\\end{tabular}"""
+    
+    return latex
+
 def generate_results_table(results, output_dir, name_file):
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
@@ -81,13 +117,18 @@ def generate_results_table(results, output_dir, name_file):
         writer.writerow(headers)
         writer.writerows(rows)
     
-    return csv_file
+    latex_table = generate_latex_table(results, name_file)
+    tex_file = output_dir / f"results_{name_file}.tex"
+    with open(tex_file, 'w') as f:
+        f.write(latex_table)
+    
+    return csv_file, tex_file
 
 def process_results(calc_dir, output_dir, name_file):
     """Process calculation results and generate output files"""
     print(f"Processing results from {calc_dir}")
     
     results = collect_results(calc_dir)
-    output_file = generate_results_table(results, output_dir, name_file)
+    csv_file, tex_file = generate_results_table(results, output_dir, name_file)
     
-    print(f"Results processed successfully! Output saved to {output_file}")
+    print(f"Results processed successfully! Output saved to {csv_file} and {tex_file}")
