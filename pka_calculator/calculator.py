@@ -15,7 +15,7 @@ METHOD_TEMPLATES = {
     'AM1': "! AM1 {basis} TightSCF CPCM(water) OPT Freq",
     'WB97X-D3': "! WB97X-D3 {basis} TightSCF CPCM(water) OPT Freq",
     'CAM-B3LYP': "! CAM-B3LYP {basis} TightSCF CPCM(water) OPT Freq",
-    'PM3': "! PM3 {basis} TightSCF CPCM(water) OPT Freq"
+    'PM3': "! PM3 TightSCF CPCM(water) OPT Freq"
 }
 
 ELECTRON_COUNT = {
