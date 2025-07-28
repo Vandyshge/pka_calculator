@@ -40,7 +40,6 @@ def collect_results(calc_dir):
     return results
 
 def generate_latex_table(results, name_file):
-    """Генерирует LaTeX таблицу с энергиями Гиббса и временем расчета"""
     latex = f"""\\begin{{tabular}}{{lcccccc}}
 \\toprule
  & \\multicolumn{{2}}{{c}}{{HF}} & \\multicolumn{{2}}{{c}}{{B3LYP}} & \\multicolumn{{2}}{{c}}{{PBE0}} \\\\
