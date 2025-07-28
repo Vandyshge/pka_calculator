@@ -15,7 +15,7 @@ cd pka_calculator
 pip install -e .
 ```
 
-3. Checking the installation
+3. Checking the installation:
 ```bash
 pka-calculator --help
 ```
@@ -64,7 +64,7 @@ pka-calculator visualize analysis/ -o plots
 
 or 6. Run the results through the processing pipeline:
 ```bash
-pka-calculator pipeline mycalculations/ -e molecules/experimental_pka.csv -o data
+pka-calculator pipeline mycalculations/ -e experimental_pka.csv -o data
 ```
 
 ## File Structure
