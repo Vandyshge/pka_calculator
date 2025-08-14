@@ -5,6 +5,7 @@ from .processor import process_results
 from .analyzer import analyze_results
 from .visualizer import visualize_results
 from .monitor import monitor_jobs
+from .deprotonator import process_deprotonation
 
 def main():
     parser = argparse.ArgumentParser(description='pKa Calculator Tool')
@@ -27,6 +28,13 @@ def main():
                            help='Path to calculations_summary.txt')
     mon_parser.add_argument('-u', '--user', default='vandyshe',
                            help='Name of user')
+
+    # Deprotonation comand
+    depro_parser = subparsers.add_parser('deprotonate', help='Interactive creation of deprotonated molecules')
+    depro_parser.add_argument('calc_dir', 
+                            help='Directory with calculations (contains basis set directories)')
+    depro_parser.add_argument('-o', '--output', default='deprotonated',
+                            help='Output directory for deprotonated molecules')
 
     # Processing command
     proc_parser = subparsers.add_parser('process', help='Process calculation results')
@@ -72,6 +80,8 @@ def main():
 
     if args.command == 'calculate':
         calculate_pka(args.xyz_dir, args.basis, args.methods, args.output)
+    elif args.command == 'deprotonate':
+        process_deprotonation(args.calc_dir, args.output)
     elif args.command == 'monitor':
         monitor_jobs(args.summary_path, args.user)
     elif args.command == 'process':
