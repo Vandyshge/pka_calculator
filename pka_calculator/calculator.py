@@ -40,23 +40,34 @@ def calculate_multiplicity(xyz_file, charge=0):
     multiplicity = 2 * unpaired_electrons*1/2 + 1
     return int(multiplicity)
 
-def generate_calculations(xyz_dir, basis, methods, output_dir):
-    xyz_files = [f for f in os.listdir(xyz_dir) if f.endswith(".xyz") and not f.endswith("_deprotonated.xyz")]
+def generate_calculations(xyz_dir, basis, methods, output_dir, forms=None):
+    all_xyz_files = [f for f in os.listdir(xyz_dir) if f.endswith(".xyz")]
+    
+    base_names = set()
+    for f in all_xyz_files:
+        if f.endswith("_deprotonated.xyz"):
+            base_names.add(f.replace("_deprotonated.xyz", ""))
+        else:
+            base_names.add(f.replace(".xyz", ""))
+    
     output_dir = Path(output_dir).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # if methods == []
+    if forms is None:
+        forms = ["neutral", "deprotonated"]
+    elif isinstance(forms, str):
+        forms = [forms]
     
     summary_file = output_dir / "calculations_summary.csv"
     
     with open(summary_file, 'w', encoding='utf-8') as sf:
         sf.write("Molecule;Method;Form;Job ID;Status\n")
     
-    for xyz in xyz_files:
-        base_name = os.path.splitext(xyz)[0]
-        
-        for form, suffix in [("neutral", ""), ("deprotonated", "_deprotonated")]:
+    for base_name in sorted(base_names):
+        for form in forms:
+            suffix = "_deprotonated" if form == "deprotonated" else ""
             src_xyz = Path(xyz_dir) / f"{base_name}{suffix}.xyz"
+            
             if not src_xyz.exists():
                 continue
                 
@@ -112,15 +123,16 @@ end''')
                 with open(summary_file, 'a', encoding='utf-8') as sf:
                     sf.write(f"{base_name};{method_name};{form};{job_id};{status}\n")
                 
-                os.chdir("../../../../../")  # Return to original directory
+                os.chdir("../../../../../")
 
-def calculate_pka(xyz_dir, basis, methods, output_dir):
+def calculate_pka(xyz_dir, basis, methods, output_dir, forms=None):
     """Main function to calculate pKa values"""
     print(f"Starting pKa calculations for molecules in {xyz_dir}")
     print(f"Using basis set: {basis}")
     print(f"Methods: {', '.join(methods)}")
+    print(f"Forms: {forms if forms else 'both neutral and deprotonated'}")
     print(f"Output directory: {output_dir}")
     
-    generate_calculations(xyz_dir, basis, methods, output_dir)
+    generate_calculations(xyz_dir, basis, methods, output_dir, forms)
     
     print("Calculations submitted successfully!")

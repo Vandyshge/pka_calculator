@@ -21,6 +21,8 @@ def main():
                            help='Calculation methods')
     calc_parser.add_argument('-o', '--output', default='mycalculations',
                            help='Output directory (full)')
+    calc_parser.add_argument('-f', '--forms', nargs='+', choices=['neutral', 'deprotonated'],
+                           help='Forms to calculate (neutral, deprotonated, or both if not specified)')
 
     # Monitor command
     mon_parser = subparsers.add_parser('monitor', help='Monitor running jobs')
@@ -79,7 +81,7 @@ def main():
     args = parser.parse_args()
 
     if args.command == 'calculate':
-        calculate_pka(args.xyz_dir, args.basis, args.methods, args.output)
+        calculate_pka(args.xyz_dir, args.basis, args.methods, args.output, args.forms)
     elif args.command == 'deprotonate':
         process_deprotonation(args.calc_dir, args.output)
     elif args.command == 'monitor':
