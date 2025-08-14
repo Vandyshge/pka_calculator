@@ -76,8 +76,8 @@ def analyze_results(results_dir, experimental_file, output_dir, name_file):
     
     results_df = pd.read_csv(Path(results_dir) / f"results_{name_file}.csv", sep=';')
     pka_df = pd.read_csv(experimental_file, sep=';')
-    pka_df = pka_df[['Acids', 'pKa (exp)']].dropna()
-    merged_df = pd.merge(results_df, pka_df, left_on='Molecule', right_on='Acids')
+    pka_df = pka_df[['Molecule', 'pKa (exp)']].dropna()
+    merged_df = pd.merge(results_df, pka_df, left_on='Molecule', right_on='Molecule')
     
     methods = [col.split('_')[0] for col in results_df.columns if '_G_N' in col]
     gh_results = {}

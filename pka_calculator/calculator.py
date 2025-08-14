@@ -44,6 +44,8 @@ def generate_calculations(xyz_dir, basis, methods, output_dir):
     xyz_files = [f for f in os.listdir(xyz_dir) if f.endswith(".xyz") and not f.endswith("_deprotonated.xyz")]
     output_dir = Path(output_dir).absolute()
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # if methods == []
     
     summary_file = output_dir / "calculations_summary.csv"
     

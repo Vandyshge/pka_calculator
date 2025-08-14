@@ -73,7 +73,7 @@ def visualize_results(analysis_dir, output_dir, name_file):
     plt.tight_layout()
     
     plot_path = output_dir / f"pka_{name_file}.png"
-    plt.savefig(plot_path, dpi=50, bbox_inches='tight')
+    plt.savefig(plot_path, dpi=300, bbox_inches='tight')
     plt.close()
 
     # Bar plot
