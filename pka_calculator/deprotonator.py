@@ -57,7 +57,6 @@ def process_deprotonation(calc_dir, output_dir):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Find available basis sets
     basis_sets = [d.name for d in calc_dir.iterdir() if d.is_dir()]
     if not basis_sets:
         print("No basis sets found in calculation directory")
@@ -74,7 +73,6 @@ def process_deprotonation(calc_dir, output_dir):
         print("Invalid selection")
         return
     
-    # Find available methods for selected basis
     basis_path = calc_dir / selected_basis
     methods = set()
     molecules = set()
