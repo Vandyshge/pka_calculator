@@ -67,12 +67,26 @@ or 6. Run the results through the processing pipeline:
 pka-calculator pipeline mycalculations/ -e experimental_pka.csv -o data
 ```
 
+7. Calculate pKa values for neutral and deprotonated species (stepwise approach):
+```bash
+# Step 1: Calculate neutral molecules
+pka-calculator calculate molecules_neutral/ -b "6-31+G*" -m PBE -o mycalculations -f neutral
+
+# Step 2: Generate deprotonated structures
+pka-calculator deprotonate mycalculations/ -o molecules_deprotonated/
+
+# Step 3: Calculate deprotonated species
+pka-calculator calculate molecules_deprotonated/ -b "6-31+G*" -m PBE -o mycalculations -f deprotonated
+```
+
 ## File Structure
 ```txt
 pka_calculator/
 ├── pka_calculator/                   # Core code
+│   ├── cli.py                        # Command Line Interface
 │   ├── calculator.py                 # Run calculations
 │   ├── monitor.py                    # Job monitoring
+│   ├── deprotonator.py               # Deprotonated molecules
 │   ├── processor.py                  # Process results
 │   ├── analyzer.py                   # Data analysis  
 │   ├── visualizer.py                 # Visualization
