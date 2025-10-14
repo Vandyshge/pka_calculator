@@ -2,6 +2,8 @@ import os
 import re
 import csv
 from pathlib import Path
+import pprint
+import json
 
 def parse_output_file(output_file):
     gibbs_energy = None
@@ -30,104 +32,134 @@ def collect_results(calc_dir):
         if "output.out" in files:
             output_file = os.path.join(root, "output.out")
             path_parts = Path(root).parts
-            molecule = path_parts[-3]  # calc_dir/basis/molecule/form/method
-            form = path_parts[-2]
-            method = path_parts[-1]
             
-            gibbs, time = parse_output_file(output_file)
-            results[(molecule, method, form)] = (gibbs, time)
+            # calc_dir/basis/molecule/form/method
+            if len(path_parts) >= 5:
+                basis = path_parts[-4]
+                molecule = path_parts[-3]
+                form = path_parts[-2]
+                method = path_parts[-1]
+                
+                gibbs, time = parse_output_file(output_file)
+                results[(basis, molecule, method, form)] = (gibbs, time)
     
     return results
-
-def generate_latex_table(results, name_file):
-    latex = f"""\\begin{{tabular}}{{lcccccc}}
-\\toprule
- & \\multicolumn{{2}}{{c}}{{HF}} & \\multicolumn{{2}}{{c}}{{B3LYP}} & \\multicolumn{{2}}{{c}}{{PBE0}} \\\\
-\\cmidrule(lr){{2-3}} \\cmidrule(lr){{4-5}} \\cmidrule(lr){{6-7}}
-\\multirow{{2}}{{*}}{{Molecule}} & G$_N$ & G$_D$ & G$_N$ & G$_D$ & G$_N$ & G$_D$ \\\\
- & t$_N$ & t$_D$ & t$_N$ & t$_D$ & t$_N$ & t$_D$ \\\\
-\\midrule
-"""
-
-    molecules = sorted({key[0] for key in results.keys()})
-    methods = sorted({key[1] for key in results.keys()})
-    
-    for mol in molecules:
-        energy_row = f"\\multirow{{2}}{{*}}{{{mol}}}"
-        time_row = " "
-        
-        for method in methods:
-            for form in ["neutral", "deprotonated"]:
-                key = (mol, method, form)
-                if key in results:
-                    gibbs, time = results[key]
-                    energy_row += f" & {gibbs:.6f}" if gibbs is not None else " & --"
-                    time_row += f" & {time}" if time is not None else " & --"
-                else:
-                    energy_row += " & --"
-                    time_row += " & --"
-        
-        latex += energy_row + " \\\\\n" + time_row + " \\\\\n"
-
-    latex += """\\bottomrule
-\\end{tabular}"""
-    
-    return latex
 
 def generate_results_table(results, output_dir, name_file):
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True)
     
-    molecules = sorted({key[0] for key in results.keys()})
-    methods = sorted({key[1] for key in results.keys()})
+    molecules = sorted({key[1] for key in results.keys()})
+    methods = sorted({key[2] for key in results.keys()})
+    basis_sets = sorted({key[0] for key in results.keys()})
     
-    headers = ["Molecule"]
-    for method in methods:
-        headers.extend([
-            f"{method}_G_N",
-            f"{method}_G_D",
-            f"{method}_t_N",
-            f"{method}_t_D"
-        ])
+    base_molecules = {}
+    for (basis, molecule, method, form), (gibbs, time) in results.items():
+        if '_deprotonated' in molecule:
+            base_name = molecule.split('_')[0]
+        elif '_protonated' in molecule:
+            base_name = molecule.split('_')[0]
+        else:
+            base_name = molecule
+        
+        if base_name not in base_molecules:
+            base_molecules[base_name] = {}
+        
+        if method not in base_molecules[base_name]:
+            base_molecules[base_name][method] = {}
+        
+        if basis not in base_molecules[base_name][method]:
+            base_molecules[base_name][method][basis] = {'neutral': None, 'deprotonated': {}, 'protonated': {}}
+        
+        if form == "neutral":
+            base_molecules[base_name][method][basis]['neutral'] = (gibbs, time)
+        elif "deprotonated" in form:
+            base_molecules[base_name][method][basis]['deprotonated'][form] = (gibbs, time)
+        elif "protonated" in form:
+            base_molecules[base_name][method][basis]['protonated'][form] = (gibbs, time)
+    
+    headers = ["Molecule", "Method", "Basis", "Calculation_Form"]
+    energy_headers = []
+    time_headers = []
+    for form_type in ["N", "D", "P"]:
+        energy_headers.extend([f"G_{form_type}"])
+        time_headers.extend([f"t_{form_type}"])
+    
+    headers.extend(energy_headers)
+    headers.extend(time_headers)
     
     rows = []
-    for mol in molecules:
-        row = [mol]
-        
-        for method in methods:
-            key_n = (mol, method, "neutral")
-            gibbs_n, time_n = results.get(key_n, (None, None))
-            
-            key_d = (mol, method, "deprotonated")
-            gibbs_d, time_d = results.get(key_d, (None, None))
-            
-            row.extend([
-                f"{gibbs_n:.6f}" if gibbs_n is not None else '',
-                f"{gibbs_d:.6f}" if gibbs_d is not None else '',
-                str(time_n) if time_n is not None else '',
-                str(time_d) if time_d is not None else ''
-            ])
-        
-        rows.append(row)
+    for base_name in sorted(base_molecules.keys()):
+        for method in sorted(base_molecules[base_name].keys()):
+            for basis in sorted(base_molecules[base_name][method].keys()):
+                method_data = base_molecules[base_name][method][basis]
+                
+                all_forms = set()
+                all_forms.update(method_data['deprotonated'].keys())
+                all_forms.update(method_data['protonated'].keys())
+                
+                if not all_forms and method_data['neutral']:
+                    gibbs_n, time_n = method_data['neutral']
+                    row = [
+                        base_name,  # Molecule
+                        method,     # Method
+                        basis,      # Basis
+                        "neutral",  # Calculation_Form
+                        f"{gibbs_n:.6f}" if gibbs_n is not None else '',  # G_N
+                        '',  # G_D
+                        '',  # G_P
+                        str(time_n) if time_n is not None else '',  # t_N
+                        '',  # t_D
+                        ''   # t_P
+                    ]
+                    rows.append(row)
+                
+                for form in sorted(all_forms):
+                    form_type = "deprotonated" if "deprotonated" in form else "protonated"
+                    form_suffix = form.replace('_deprotonated', '').replace('_protonated', '')
+                    full_molecule_name = f"{base_name}_{form_suffix}"
+                    
+                    calculation_form = "deprotonated" if "deprotonated" in form else "protonated"
+                    
+                    gibbs_n, time_n = method_data['neutral'] if method_data['neutral'] else (None, None)
+                    
+                    if form_type == "deprotonated" and form in method_data['deprotonated']:
+                        gibbs_d, time_d = method_data['deprotonated'][form]
+                    else:
+                        gibbs_d, time_d = (None, None)
+                    
+                    if form_type == "protonated" and form in method_data['protonated']:
+                        gibbs_p, time_p = method_data['protonated'][form]
+                    else:
+                        gibbs_p, time_p = (None, None)
+
+                    row = [
+                        full_molecule_name,  # Molecule
+                        method,              # Method
+                        basis,               # Basis
+                        calculation_form,    # Calculation_Form
+                        f"{gibbs_n:.6f}" if gibbs_n is not None else '',  # G_N
+                        f"{gibbs_d:.6f}" if gibbs_d is not None else '',  # G_D
+                        f"{gibbs_p:.6f}" if gibbs_p is not None else '',  # G_P
+                        str(time_n) if time_n is not None else '',  # t_N
+                        str(time_d) if time_d is not None else '',  # t_D
+                        str(time_p) if time_p is not None else ''   # t_P
+                    ]
+                    rows.append(row)
     
     csv_file = output_dir / f"results_{name_file}.csv"
-    with open(csv_file, 'w', newline='') as f:
+    with open(csv_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f, delimiter=';')
         writer.writerow(headers)
         writer.writerows(rows)
     
-    latex_table = generate_latex_table(results, name_file)
-    tex_file = output_dir / f"results_{name_file}.tex"
-    with open(tex_file, 'w') as f:
-        f.write(latex_table)
-    
-    return csv_file, tex_file
+    return csv_file
 
 def process_results(calc_dir, output_dir, name_file):
     """Process calculation results and generate output files"""
     print(f"Processing results from {calc_dir}")
     
     results = collect_results(calc_dir)
-    csv_file, tex_file = generate_results_table(results, output_dir, name_file)
+    csv_file = generate_results_table(results, output_dir, name_file)
     
-    print(f"Results processed successfully! Output saved to {csv_file} and {tex_file}")
+    print(f"Results processed successfully! Output saved to {csv_file}")

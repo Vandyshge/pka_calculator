@@ -6,6 +6,9 @@ from .analyzer import analyze_results
 from .visualizer import visualize_results
 from .monitor import monitor_jobs
 from .deprotonator import process_deprotonation
+from .equilibrator import process_equilibrated
+from .interactive import make_interactive_html
+from .min_pka import extract_min_pka
 
 def main():
     parser = argparse.ArgumentParser(description='pKa Calculator Tool')
@@ -28,7 +31,7 @@ def main():
     mon_parser = subparsers.add_parser('monitor', help='Monitor running jobs')
     mon_parser.add_argument('summary_path', default='mycalculations',
                            help='Path to calculations_summary.txt')
-    mon_parser.add_argument('-u', '--user', default='vandyshe',
+    mon_parser.add_argument('-u', '--user', default='vandyshev',
                            help='Name of user')
 
     # Deprotonation comand
@@ -66,6 +69,8 @@ def main():
                            help='Output directory')
     vis_parser.add_argument('-n', '--name_file', default='basis',
                            help='Name of output file (basis)')
+    vis_parser.add_argument('-f', '--calibration_file', default='None',
+                           help='File with parametrs of calibration')
 
     # Full pipeline command
     pipeline_parser = subparsers.add_parser('pipeline', help='Run full processing pipeline')
@@ -77,6 +82,34 @@ def main():
                                help='Output directory')
     pipeline_parser.add_argument('-n', '--name_file', default='basis',
                                help='Base name for output files')
+
+    # Equilibration command
+    eq_parser = subparsers.add_parser('equilibrate', help='Save equilibrated (last-frame) XYZ molecules')
+    eq_parser.add_argument('calc_dir',
+                           help='Directory with calculations (contains basis set directories)')
+    eq_parser.add_argument('-o', '--output', default='equilibrated',
+                           help='Output directory for equilibrated molecules')
+
+    # Interactive visualization command
+    inter_parser = subparsers.add_parser('interactive', help='Build interactive HTML visualization')
+    inter_parser.add_argument('analysis_dir', 
+                              help='Directory with analysis results (contains pka_xxx.csv)')
+    inter_parser.add_argument('-n', '--name_file', required=True,
+                              help='Base name of pKa file (without prefix pka_)')
+    inter_parser.add_argument('-o', '--output', default='.',
+                              help='Output directory for HTML')
+    inter_parser.add_argument('--manual_coeffs', default=None,
+                              help='Dict or path to CSV with Method;Slope;Intercept')
+    inter_parser.add_argument('--html_name', default=None,
+                              help='Name of output HTML file (default auto)')
+
+    # Extract minimal pKa
+    minpka_parser = subparsers.add_parser("minpka", help="Extract minimal pKa per Base_Molecule and save to CSV")
+    minpka_parser.add_argument("analysis_dir", help="Directory with analysis results (contains pka_all.csv)")
+    minpka_parser.add_argument("-o", "--output", default=".", help="Output directory for CSV")
+    minpka_parser.add_argument("-n", "--name_file", default="min", help="Name of output file")
+
+
 
     args = parser.parse_args()
 
@@ -91,7 +124,7 @@ def main():
     elif args.command == 'analyze':
         analyze_results(args.results_dir, args.experimental, args.output, args.name_file)
     elif args.command == 'visualize':
-        visualize_results(args.analysis_dir, args.output, args.name_file)
+        visualize_results(args.analysis_dir, args.output, args.name_file, args.calibration_file)
     elif args.command == 'pipeline':
         print("\n=== Processing calculation results ===")
         process_results(args.calc_dir, args.output, args.name_file)
@@ -99,10 +132,36 @@ def main():
         print("\n=== Analyzing results ===")
         analyze_results(args.output, args.experimental, args.output, args.name_file)
         
-        print("\n=== Generating visualizations ===")
+        # print("\n=== Generating visualizations ===")
+        # visualize_results(args.output, args.output, args.name_file)
+    
+        print("\n=== Extracting minimal pKa values ===")
+        extract_min_pka(args.output, args.output, args.name_file)
+    
+        print("\n=== Generating visualization for minimal pKa ===")
         visualize_results(args.output, args.output, args.name_file)
-        
+    
+        print("\n=== Building interactive HTML visualization ===")
+        make_interactive_html(
+            name_file=args.name_file,
+            analysis_dir=args.output,
+            output_dir=args.output,
+            manual_coeffs=None,
+            html_name=f"pka_{args.name_file}_interactive.html"
+        )
+    
         print("\nPipeline completed successfully!")
+    elif args.command == 'equilibrate':
+        process_equilibrated(args.calc_dir, args.output)
+    elif args.command == 'interactive':
+        make_interactive_html(name_file=args.name_file,
+                              analysis_dir=args.analysis_dir,
+                              output_dir=args.output,
+                              # manual_coeffs=args.manual_coeffs,
+                              html_name=args.html_name)
+    elif args.command == "minpka":
+        extract_min_pka(args.analysis_dir, args.output, args.name_file)
+
 
 if __name__ == '__main__':
     main()
