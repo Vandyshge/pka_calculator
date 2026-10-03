@@ -3,69 +3,6 @@
 A reproducible Python workflow for quantum-chemical **pKa / pKb** calculations with
 ORCA and Slurm.
 
-Version 1.0 was a ground-up rewrite of the original script-based package. Version 1.1
-replaces the original grouped Slurm launcher with the dynamic worker-pool scheduler validated
-on the target ORCA/OpenMPI cluster. Chemistry, quantum-chemistry input generation, scheduling,
-output parsing, and thermodynamic analysis remain independent layers.
-
-Version 1.3.1 can parse ORCA outputs with multiple processes via
-`pka-calculator collect PROJECT --workers 8` or `PKA_COLLECT_WORKERS=8`. Rows retain
-the order in `calculations.csv`, and `results.csv` is replaced only after a complete parse.
-
-Version 1.3.0 submits homogeneous worker-pool batches as Slurm job arrays by default.
-One `sbatch --array` submission replaces many separate submissions, while each array
-element still runs its own batch queue and retains its own Slurm resources and logs.
-
-Version 1.2.3 adds energy-window selection of multiple optimized neutral
-conformers for downstream ion generation. Version 1.2.2 added route-oriented
-reaction-energy descriptors. Acid pKa uses
-`G(A-) - G(HA)`, conjugate-acid pKaH uses `G(B) - G(BH+)`, and direct pKb uses
-`G(BH+) - G(B)` before its constant `OH-/H2O` reference is added. A pK calibration
-against these descriptors therefore has the physically expected positive orientation.
-Route-aware macrostate selection remains minimum micro-pKa, maximum micro-pKaH, and
-minimum micro-pKb.
-
-For conformer-sensitive workflows, use
-`select_conformers_within_energy_window(...)`. It retains every valid optimized
-neutral within a configurable energy window of the minimum, with an optional
-per-molecule cap and explicit energy ranks. Ionic states should keep the returned
-parent conformer identity and use that parent's energy in reaction differences.
-
-## What changed
-
-- Molecule **charge and multiplicity are explicit data**, never inferred from a filename.
-- Every molecular form has a stable `molecule_id`, `state_id`, `state`, `site_id`, charge,
-  multiplicity, and XYZ path in `molecules.csv`.
-- ORCA method/basis/solvent/resources are structured in TOML instead of hard-coded method
-  templates.
-- One Slurm job is a **dynamic ORCA worker pool** that can process hundreds of calculations
-  sequentially while keeping several ORCA calculations active in parallel.
-- Jobs are homogeneous by `cores` value. With 32 physical cores and `cores = 4`, one job has
-  up to eight worker slots; each free worker immediately takes the next pending calculation.
-- All prepared batches are submitted in one array when the configured array size permits.
-  The array reserves the largest batch CPU allocation for every element, including a smaller
-  final batch. `batches.csv` stores the array base
-  job ID once per array for whole-array `afterany:<job_id>` dependencies, plus an individual
-  `array_task_job_id` for each batch. Existing per-batch Slurm submission remains available
-  with `job_array = false`.
-- ORCA is called directly by its configured executable — never through `srun` or an external
-  `mpirun`. Slurm exposes MPI-visible slots with `--ntasks=N`, while worker CPU sets are
-  isolated with `taskset` plus OpenMPI `hwloc_base_cpu_list`.
-- Successful calculations are detected strictly by `ORCA TERMINATED NORMALLY`, not shell
-  exit code. Re-submitted jobs skip successful outputs and retry only incomplete/failed work.
-- Results are validated before entering thermodynamics: normal termination, SCF failure,
-  optimization convergence, Gibbs energy, and significant imaginary frequencies are checked.
-- pKa/pKb calibration and prediction are separate commands, preventing accidental reuse of
-  a test set to fit the effective reference energy.
-- Different protonation/deprotonation sites remain visible in the output; the selected
-  thermodynamic state is marked instead of silently discarding the other forms.
-- Macrostate selection is centralized and target-aware: minimum micro-pKa for acids,
-  maximum micro-pKaH for conjugate acids, and minimum micro-pKb for direct pKb.
-- RDKit generation is graph-aware and deterministic. Force-field energies are **not** used as
-  physical tautomer free energies; tautomers are candidates for subsequent QC screening.
-- Every prepared calculation stores `metadata.json` and SHA-256 hashes of `input.inp` and
-  `molecule.xyz`.
-
 ## Installation
 
 ```bash
