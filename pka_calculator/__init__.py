@@ -1,10 +1,24 @@
-from .calculator import calculate_pka
-from .processor import process_results
-from .analyzer import analyze_results
-from .visualizer import visualize_results
-from .monitor import monitor_jobs
-from .deprotonator import process_deprotonation
+"""pka-calculator: reproducible pKa/pKb quantum-chemistry workflows."""
 
-__all__ = ['calculate_pka', 'process_results', 'analyze_results', 
-           'visualize_results', 'monitor_jobs', 'process_deprotonation', 
-           'process_equilibrated', 'extract_min_pka', 'make_interactive_html']
+from .geometry import select_conformers_within_energy_window
+from .models import CalculationLevel, CalculationResult, MoleculeState
+from .thermodynamics.core import (
+    ThermodynamicReference,
+    reaction_energy_difference,
+    reaction_energy_table,
+    select_macro_microstates,
+)
+
+__version__ = "1.3.1"
+
+__all__ = [
+    "CalculationLevel",
+    "CalculationResult",
+    "MoleculeState",
+    "ThermodynamicReference",
+    "select_conformers_within_energy_window",
+    "reaction_energy_difference",
+    "reaction_energy_table",
+    "select_macro_microstates",
+    "__version__",
+]

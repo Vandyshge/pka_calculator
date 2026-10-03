@@ -1,21 +1,40 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pka_calculator"
-version = "0.1"
+name = "pka-calculator"
+version = "1.3.1"
+description = "Reproducible pKa/pKb quantum-chemistry workflows with ORCA and Slurm"
+readme = "README.md"
+requires-python = ">=3.10"
 authors = [
-    {name="Vandyshev Georgii", email="vandyshev.gk@phystech.edu"},
+  {name = "Vandyshev Georgii", email = "vandyshev.gk@phystech.edu"},
 ]
-description = "Tool for pKa calculations"
-requires-python = ">=3.8"
 dependencies = [
-    "numpy",
-    "pandas",
-    "matplotlib",
-    "scipy",
+  "numpy>=1.23",
+  "pandas>=1.5",
+  "matplotlib>=3.6",
+  "scipy>=1.9",
+  "tomli>=2.0; python_version < '3.11'",
 ]
+
+[project.optional-dependencies]
+chem = ["rdkit>=2023.9"]
+interactive = ["plotly>=5"]
+dev = ["pytest>=7", "ruff>=0.5"]
+all = ["rdkit>=2023.9", "plotly>=5"]
 
 [project.scripts]
 pka-calculator = "pka_calculator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pka_calculator*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
